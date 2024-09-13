@@ -1,6 +1,6 @@
 ---
-feature: I'm Gonna Build My Own Manager With Backjack and Modules!
-start-date: (fill me in with today's date, YYYY-MM-DD)
+feature: I'm Gonna Build My Own Manager With Blackjack and Modules!
+start-date: (2024-09-13)
 author: Anderson Torres
 co-authors: (find a buddy later to help out with the RFC)
 shepherd-team: (names, to be nominated and accepted by RFC steering committee)
@@ -11,10 +11,12 @@ related-issues: (will contain links to implementation PRs)
 # Summary
 [summary]: #summary
 
-Enhance Nixpkgs monorepo with a basic user management system.
+Enhance Nixpkgs monorepo with a declarative user and home environment management system.
 
 # Terminology
 [terminology]: #terminology
+
+NHMT: Nix Home Management Tool
 
 Henceforth,
 
@@ -33,8 +35,8 @@ The average user has two extreme options here: either configure a whole OS via
 superuser powers or use raw Nix commands as a basic user, some of them [not
 recommended](https://stop-using-nix-env.privatevoid.net/).
 
-This RFC proposes to fill this gap-in-the-middle: a structured model of system
-management for basic users.
+This RFC proposes to fill this gap-in-the-middle: a structured, modular, declarative, and 
+flexible model of system management for _basic users_ and the /home/ directory.
 
 # Detailed design
 [design]: #detailed-design
@@ -46,18 +48,24 @@ Here is an informational sketch based on `nixos-rebuild` and friends:
 - Configuration provided by the modules above
 - Helper program that reads the configuration provided by the user and realizes
   it
+- Scalability, the tool should be able to scale with user needs, from managing a single user’s environment to handling complex setups involving multiple users, machines, and services.
+- Modularity and customizability 
+- Tight integration with the Nix package manager
+- Declarative
+- Flexibility 
+- User friendly and intuitive to use
 
 # Examples and Interactions
 [examples-and-interactions]: #examples-and-interactions
 
 ```shell
-$> NHMT help
-$> emacs hmt-configuration.nix
-$> NHMT test-container
-$> NHMT build
-$> NHMT list-generations
-$> NHMT select-generation
-$> NHMT delete-generations
+$> nix home help
+$> emacs home-configuration.nix
+$> nix home test-container
+$> nix home build
+$> nix home list-generations
+$> nix home select-generation
+$> nix home delete-generations
 ```
 
 # Drawbacks
@@ -65,7 +73,7 @@ $> NHMT delete-generations
 
 - Why not to keep this tool outside Nixpkgs monorepo?
 
-  Nowadays it can be argued that overlays and other facilities allow to keep
+  Nowadays, it can be argued that overlays and other facilities allow keeping
   things outside the Nixpkgs monorepo. However, having a home management toolset
   inside the monorepo brings many advantages:
   
@@ -75,6 +83,7 @@ $> NHMT delete-generations
   - No longer dealing with synchronization among projects
   - Better strategies for deduplication
     - More generally, better code sharing and refactoring
+  - A tool within the monorepo benefits from the established reputation of NixOS and Nixpkgs.
     
   Further, including the tool inside the monorepo brings to it a better
   reputation, since it is kept by the same organization of NixOS and Nixpkgs.
@@ -95,21 +104,21 @@ $> NHMT delete-generations
   
 - Code duplications.
 
-  They can be refactored later. Indeed it is an advantage of bringing them to
-  the monorepo, because the duplicated code can be refactored more cleanly.
+  They can be refactored later. Indeed, it is an advantage of bringing them to
+  the monorepo because the duplicated code can be refactored more cleanly.
 
 - Evaluation times of monorepo will increase.
 
-  A small price to pay.
+  A small price to pay compared to the benefits we recieve with such a tool being in `nixpkgs`.
 
 # Alternatives
 [alternatives]: #alternatives
 
-- The trivial "do nothing".
+- The trivial “do nothing”.
 
 - Promote an alternative toolset.
 
-  The most viable alternative in this field is home-manager. However it is not
+  The most viable alternative in this field is home-manager. However, it is not
   so easy to assimilate a consolidated project within another consolidated
   project.
   
@@ -134,22 +143,31 @@ the point of `home` being a mere subcommand of `guix`.
 
 ## Home Manager
 
-Home Manager needs no presentations.
+Home Manager is a well-established tool in the Nix ecosystem that allows users to manage their user-specific environment in a declarative manner using the Nix language. 
+
+## Wrapper Manager
+
+Wrapper Manager is a modular framework designed to create wrappers for executables, enabling users to manage environment variables, command-line arguments, and other execution parameters in a declarative manner.
+Wrapper Manager focuses on providing a clean and structured way to extend or modify the behavior of existing applications without altering their source code or relying on global environment changes.
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
 
 Given that this tool will live inside Nixpkgs monorepo, it is expected that
-future packages will interact with this new tool. How those interactions should
-be dealt?
+future packages will interact with this new tool. How should those interactions 
+be dealt with?
 
 Usually a maintainer of a package, say `firefox`, will be interested in being a
 maintainer of both NixOS and NHMT modules.
 
+What should the command name be? `nix home`? Something else?
+
+Should this be blocked on #163?
+
 # Future work
 [future]: #future-work
 
-- Update an extend the CI
+- Update and extend the CI pipeline to account for NHMT
 - Set expectations on portability among present and future platforms Nixpkgs
   supports
   - Especially outside NixOS
@@ -160,6 +178,7 @@ maintainer of both NixOS and NHMT modules.
 [references]: #references
 
 - [Home Manager](https://nix-community.github.io/home-manager/)
+- [Dropping Home-Manager](https://ayats.org/blog/no-home-manager), by Fernando Ayats
 - [Keeping One's Home
   Tidy](https://guix.gnu.org/en/blog/2022/keeping-ones-home-tidy/), by Ludovic
   Courtès
@@ -170,3 +189,4 @@ maintainer of both NixOS and NHMT modules.
 - [BuilEnv-based Declarative User
   Environment](https://gist.github.com/lheckemann/402e61e8e53f136f239ecd8c17ab1deb)
   by lheckellman
+- [GNU Stow](https://www.gnu.org/software/stow/)
